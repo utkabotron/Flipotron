@@ -61,6 +61,19 @@ The script compiles from source, creates an app bundle in `/Applications`, sets 
 
 After install, add `Flipotron.app` to **System Settings → Privacy & Security → Accessibility**.
 
+## Flipotron vs Punto Switcher
+
+| | Flipotron | Punto Switcher |
+|---|---|---|
+| Conversion | Manual (Right Option) | Auto-detection by dictionary |
+| False triggers | None — you decide when to convert | Frequent on short words, code, URLs |
+| Clipboard | Not used (keycode retype) | Replaces clipboard content |
+| Undo | Right Option again | Breaks on fast typing |
+| Privacy | Offline, open source, ~400 LOC | Closed source, Yandex telemetry |
+| Weight | Single binary, no dependencies | ~50 MB installer |
+| macOS support | Native (Swift + Carbon) | Discontinued since 2021 |
+| Price | Free | Was free (now unavailable) |
+
 ## How It Works Under the Hood
 
 1. An event tap listens for all keystrokes and records keycodes into a buffer
