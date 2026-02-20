@@ -1,6 +1,8 @@
 import Carbon
 import AppKit
 
+setbuf(stdout, nil)
+
 // MARK: - Conversion tables EN↔RU (QWERTY ↔ ЙЦУКЕН)
 
 let enToRu: [Character: Character] = [
