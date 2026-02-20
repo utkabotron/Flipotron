@@ -57,7 +57,7 @@ The icon flips vertically to indicate the current layout:
 ### Build from source
 
 ```bash
-cd LayoutSwitcher
+cd Flipotron
 swiftc main.swift -o layout-switcher -framework Carbon -framework AppKit
 ```
 
@@ -72,7 +72,7 @@ cp layout-switcher /Applications/Flipotron.app/Contents/MacOS/
 
 ### Autostart (optional)
 
-Create `~/Library/LaunchAgents/com.pavelbrick.layoutswitcher.plist`:
+Create `~/Library/LaunchAgents/com.pavelbrick.flipotron.plist`:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -81,7 +81,7 @@ Create `~/Library/LaunchAgents/com.pavelbrick.layoutswitcher.plist`:
 <plist version="1.0">
 <dict>
     <key>Label</key>
-    <string>com.pavelbrick.layoutswitcher</string>
+    <string>com.pavelbrick.flipotron</string>
     <key>ProgramArguments</key>
     <array>
         <string>/Applications/Flipotron.app/Contents/MacOS/layout-switcher</string>
@@ -97,7 +97,7 @@ Create `~/Library/LaunchAgents/com.pavelbrick.layoutswitcher.plist`:
 Then load it:
 
 ```bash
-launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.pavelbrick.layoutswitcher.plist
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.pavelbrick.flipotron.plist
 ```
 
 ## How It Works Under the Hood
