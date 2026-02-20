@@ -3,9 +3,9 @@ import AppKit
 
 setbuf(stdout, nil)
 
-// MARK: - Conversion tables EN↔RU (QWERTY ↔ ЙЦУКЕН)
+// MARK: - Conversion tables (default: QWERTY ↔ ЙЦУКЕН)
 
-let enToRu: [Character: Character] = [
+let defaultLang1ToLang2: [Character: Character] = [
     "q": "й", "w": "ц", "e": "у", "r": "к", "t": "е", "y": "н", "u": "г", "i": "ш", "o": "щ", "p": "з",
     "[": "х", "]": "ъ",
     "a": "ф", "s": "ы", "d": "в", "f": "а", "g": "п", "h": "р", "j": "о", "k": "л", "l": "д",
@@ -14,33 +14,61 @@ let enToRu: [Character: Character] = [
     ",": "б", ".": "ю",
 ]
 
-let ruToEn: [Character: Character] = {
+var lang1ToLang2: [Character: Character] = defaultLang1ToLang2
+var lang2ToLang1: [Character: Character] = {
     var d: [Character: Character] = [:]
-    for (en, ru) in enToRu { d[ru] = en }
+    for (k, v) in defaultLang1ToLang2 { d[v] = k }
     return d
 }()
 
-// MARK: - Cyrillic helpers
+// MARK: - Layout IDs
 
-func isCyrillicUpper(_ ch: Character) -> Bool {
-    guard let scalar = ch.unicodeScalars.first else { return false }
-    return scalar.value >= 0x0410 && scalar.value <= 0x042F
-}
+var layout1ID = "com.apple.keylayout.ABC"
+var layout2ID = "com.apple.keylayout.RussianWin"
 
-func cyrillicLower(_ ch: Character) -> Character {
-    guard let scalar = ch.unicodeScalars.first else { return ch }
-    if scalar.value >= 0x0410 && scalar.value <= 0x042F {
-        return Character(UnicodeScalar(scalar.value + 0x20)!)
+// MARK: - Config loading
+
+func loadConfig() {
+    let configPath = NSString(string: "~/.config/flipotron/config.json").expandingTildeInPath
+    guard FileManager.default.fileExists(atPath: configPath) else {
+        print("ℹ️ No config at \(configPath), using default EN↔RU")
+        return
     }
-    return ch
-}
 
-func cyrillicUpper(_ ch: Character) -> Character {
-    guard let scalar = ch.unicodeScalars.first else { return ch }
-    if scalar.value >= 0x0430 && scalar.value <= 0x044F {
-        return Character(UnicodeScalar(scalar.value - 0x20)!)
+    do {
+        let data = try Data(contentsOf: URL(fileURLWithPath: configPath))
+        guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            print("⚠️ Config is not a JSON object, using default EN↔RU")
+            return
+        }
+
+        if let l1 = json["layout1"] as? String {
+            layout1ID = l1
+        }
+        if let l2 = json["layout2"] as? String {
+            layout2ID = l2
+        }
+
+        if let mapping = json["mapping"] as? [String: String] {
+            var forward: [Character: Character] = [:]
+            var reverse: [Character: Character] = [:]
+            for (k, v) in mapping {
+                guard let kChar = k.first, let vChar = v.first else { continue }
+                forward[kChar] = vChar
+                reverse[vChar] = kChar
+            }
+            if !forward.isEmpty {
+                lang1ToLang2 = forward
+                lang2ToLang1 = reverse
+            }
+        }
+
+        let l1Short = layout1ID.components(separatedBy: ".").last ?? layout1ID
+        let l2Short = layout2ID.components(separatedBy: ".").last ?? layout2ID
+        print("✅ Loaded config: \(l1Short) ↔ \(l2Short) (\(lang1ToLang2.count) keys)")
+    } catch {
+        print("⚠️ Failed to read config: \(error.localizedDescription), using default EN↔RU")
     }
-    return ch
 }
 
 // MARK: - KeyStroke
@@ -71,7 +99,7 @@ func createFlippedImage(_ source: NSImage) -> NSImage {
 }
 
 func updateMenuBarIcon() {
-    let icon = isCurrentLayoutEN() ? iconNormal : iconFlipped
+    let icon = isCurrentLayoutLang1() ? iconNormal : iconFlipped
     globalStatusItem?.button?.image = icon
 }
 
@@ -118,19 +146,16 @@ func switchToLayout(_ layoutID: String) {
     TISSelectInputSource(source)
 }
 
-let abcID = "com.apple.keylayout.ABC"
-let russianID = "com.apple.keylayout.RussianWin"
-
-func isCurrentLayoutEN() -> Bool {
+func isCurrentLayoutLang1() -> Bool {
     let current = getCurrentInputSourceID() ?? ""
-    return current.contains("ABC")
+    return current == layout1ID
 }
 
 func toggleLayout() {
-    if isCurrentLayoutEN() {
-        switchToLayout(russianID)
+    if isCurrentLayoutLang1() {
+        switchToLayout(layout2ID)
     } else {
-        switchToLayout(abcID)
+        switchToLayout(layout1ID)
     }
     updateMenuBarIcon()
 }
@@ -240,26 +265,23 @@ func convertSelectedText() {
                 return
             }
 
-            // Determine direction from first character
+            // Determine direction: check if first mappable char belongs to lang1 or lang2
             let firstChar = selectedText.first!
-            let isEN = firstChar.asciiValue != nil && firstChar.asciiValue! < 128
+            let lowerFirst = Character(firstChar.lowercased())
+            let isLang1 = lang1ToLang2[lowerFirst] != nil
 
             var converted: [Character] = []
             for ch in selectedText {
+                let wasUpper = ch.isUppercase
+                let lower = Character(ch.lowercased())
                 var result: Character?
-                if isEN {
-                    let lower = Character(ch.lowercased())
-                    result = enToRu[lower]
-                    if let r = result, ch != lower {
-                        result = cyrillicUpper(r)
-                    }
+                if isLang1 {
+                    result = lang1ToLang2[lower]
                 } else {
-                    let isUpper = isCyrillicUpper(ch)
-                    let lower = cyrillicLower(ch)
-                    result = ruToEn[lower]
-                    if let r = result, isUpper {
-                        result = Character(r.uppercased())
-                    }
+                    result = lang2ToLang1[lower]
+                }
+                if let r = result, wasUpper {
+                    result = Character(r.uppercased())
                 }
                 converted.append(result ?? ch)
             }
@@ -313,15 +335,8 @@ func toggleSelectedCase() {
                     toggled.append(contentsOf: ch.lowercased())
                 } else if ch.isLowercase {
                     toggled.append(contentsOf: ch.uppercased())
-                } else if isCyrillicUpper(ch) {
-                    toggled.append(cyrillicLower(ch))
                 } else {
-                    let upper = cyrillicUpper(ch)
-                    if upper != ch {
-                        toggled.append(upper)
-                    } else {
-                        toggled.append(ch)
-                    }
+                    toggled.append(ch)
                 }
             }
 
@@ -539,6 +554,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         CFRunLoopAddSource(CFRunLoopGetCurrent(), runLoopSource, .commonModes)
         CGEvent.tapEnable(tap: tap, enable: true)
 
+        loadConfig()
         print("✅ Flipotron running.")
     }
 

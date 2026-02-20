@@ -77,6 +77,39 @@ After install, add `Flipotron.app` to **System Settings → Privacy & Security �
 | macOS support | Native (Swift + Carbon) | Discontinued since 2021 |
 | Price | Free | Was free (now unavailable) |
 
+## Custom Language Pairs
+
+By default, Flipotron converts between English (ABC) and Russian (ЙЦУКЕН). You can customize the language pair by creating a config file:
+
+```bash
+mkdir -p ~/.config/flipotron
+```
+
+Create `~/.config/flipotron/config.json`:
+
+```json
+{
+  "layout1": "com.apple.keylayout.ABC",
+  "layout2": "com.apple.keylayout.Ukrainian",
+  "mapping": {
+    "q": "й", "w": "ц", "e": "у", "r": "к", "t": "е",
+    "y": "н", "u": "г", "i": "ш", "o": "щ", "p": "з",
+    "[": "х", "]": "ї",
+    "a": "ф", "s": "і", "d": "в", "f": "а", "g": "п",
+    "h": "р", "j": "о", "k": "л", "l": "д",
+    ";": "ж", "'": "є",
+    "z": "я", "x": "ч", "c": "с", "v": "м", "b": "и",
+    "n": "т", "m": "ь",
+    ",": "б", ".": "ю"
+  }
+}
+```
+
+- `layout1` / `layout2` — macOS input source IDs (find yours with `defaults read ~/Library/Preferences/com.apple.HIToolbox AppleInputSourceHistory`)
+- `mapping` — character pairs: keys from layout1 map to characters in layout2
+- Without a config file, the default EN↔RU mapping is used
+- Restart Flipotron after changing the config
+
 ## How It Works Under the Hood
 
 1. An event tap listens for all keystrokes and records keycodes into a buffer
