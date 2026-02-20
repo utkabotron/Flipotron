@@ -58,7 +58,7 @@ The icon flips vertically to indicate the current layout:
 
 ```bash
 cd Flipotron
-swiftc main.swift -o layout-switcher -framework Carbon -framework AppKit
+swiftc main.swift -o flipotron -framework Carbon -framework AppKit
 ```
 
 ### Deploy
@@ -67,7 +67,7 @@ Create an app bundle and copy the binary:
 
 ```bash
 mkdir -p /Applications/Flipotron.app/Contents/MacOS
-cp layout-switcher /Applications/Flipotron.app/Contents/MacOS/
+cp flipotron /Applications/Flipotron.app/Contents/MacOS/
 ```
 
 ### Autostart (optional)
@@ -84,7 +84,7 @@ Create `~/Library/LaunchAgents/com.pavelbrick.flipotron.plist`:
     <string>com.pavelbrick.flipotron</string>
     <key>ProgramArguments</key>
     <array>
-        <string>/Applications/Flipotron.app/Contents/MacOS/layout-switcher</string>
+        <string>/Applications/Flipotron.app/Contents/MacOS/flipotron</string>
     </array>
     <key>RunAtLoad</key>
     <true/>
