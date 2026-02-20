@@ -1,2 +1,6 @@
 flipotron
 .DS_Store
+build/
+*.pkg
+Flipotron.app/
+Flipotron.zip

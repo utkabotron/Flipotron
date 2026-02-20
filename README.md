@@ -75,9 +75,22 @@ If someone sent you `Flipotron.zip`:
 3. Open it — macOS will ask for Accessibility permissions
 4. Go to **System Settings → Privacy & Security → Accessibility** and enable Flipotron
 
-### Sharing the app with someone
+### Option C: Build a .pkg installer
 
-To send Flipotron to a friend who doesn't want to build from source:
+Build a standard macOS installer package that you can send to anyone:
+
+```bash
+cd Flipotron
+./build-installer.sh
+```
+
+This produces `Flipotron-Installer.pkg`. Send it to a friend — they double-click it, follow the prompts, and Flipotron gets installed to `/Applications` with autostart enabled.
+
+> No Xcode or Terminal needed on the friend's side — just the `.pkg` file.
+
+### Sharing the app as a .zip
+
+To send Flipotron as a zip instead of an installer:
 
 ```bash
 cd Flipotron
