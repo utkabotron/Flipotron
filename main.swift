@@ -350,13 +350,37 @@ func toggleSelectedCase() {
 
 var globalTap: CFMachPort?
 var rightAltDown = false
+var recoveryTimer: Timer?
+
+func startPermissionRecovery() {
+    guard recoveryTimer == nil else { return }
+    recoveryTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { _ in
+        if AXIsProcessTrusted() {
+            if let tap = globalTap {
+                CGEvent.tapEnable(tap: tap, enable: true)
+            }
+            recoveryTimer?.invalidate()
+            recoveryTimer = nil
+            updateMenuBarIcon()
+        }
+    }
+}
 
 func eventTapCallback(proxy: CGEventTapProxy, type: CGEventType, event: CGEvent, refcon: UnsafeMutableRawPointer?) -> Unmanaged<CGEvent>? {
 
-    // Re-enable tap if disabled by system
-    if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
+    // Re-enable tap if it timed out (took too long to process events)
+    if type == .tapDisabledByTimeout {
         if let tap = globalTap {
             CGEvent.tapEnable(tap: tap, enable: true)
+        }
+        return Unmanaged.passUnretained(event)
+    }
+
+    // Permission was revoked — do NOT re-enable immediately.
+    // Poll until permission is restored, then re-enable.
+    if type == .tapDisabledByUserInput {
+        DispatchQueue.main.async {
+            startPermissionRecovery()
         }
         return Unmanaged.passUnretained(event)
     }
