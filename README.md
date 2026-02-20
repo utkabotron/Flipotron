@@ -49,56 +49,17 @@ The icon flips vertically to indicate the current layout:
 
 ## Installation
 
-### Prerequisites
-
-- macOS
-- Accessibility permissions (the app will prompt on first launch)
-
-### Build from source
-
 ```bash
+git clone https://github.com/utkabotron/Flipotron.git
 cd Flipotron
-swiftc main.swift -o flipotron -framework Carbon -framework AppKit
+./install.sh
 ```
 
-### Deploy
+The script compiles from source, creates an app bundle in `/Applications`, sets up autostart via LaunchAgent, and opens Accessibility settings.
 
-Create an app bundle and copy the binary:
+**Requirements:** macOS with Xcode Command Line Tools (`xcode-select --install`).
 
-```bash
-mkdir -p /Applications/Flipotron.app/Contents/MacOS
-cp flipotron /Applications/Flipotron.app/Contents/MacOS/
-```
-
-### Autostart (optional)
-
-Create `~/Library/LaunchAgents/com.pavelbrick.flipotron.plist`:
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
-  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-    <key>Label</key>
-    <string>com.pavelbrick.flipotron</string>
-    <key>ProgramArguments</key>
-    <array>
-        <string>/Applications/Flipotron.app/Contents/MacOS/flipotron</string>
-    </array>
-    <key>RunAtLoad</key>
-    <true/>
-    <key>KeepAlive</key>
-    <true/>
-</dict>
-</plist>
-```
-
-Then load it:
-
-```bash
-launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.pavelbrick.flipotron.plist
-```
+After install, add `Flipotron.app` to **System Settings → Privacy & Security → Accessibility**.
 
 ## How It Works Under the Hood
 
