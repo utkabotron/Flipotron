@@ -54,18 +54,46 @@ The icon flips vertically to indicate the current layout:
 - macOS
 - Accessibility permissions (the app will prompt on first launch)
 
-### Build from source
+### Option A: Quick install (build from source)
+
+If you have Xcode Command Line Tools installed (`xcode-select --install`), just run:
+
+```bash
+git clone https://github.com/utkabotron/Flipotron.git
+cd Flipotron
+./install.sh
+```
+
+The script will build, install to `/Applications`, set up autostart, and launch the app.
+
+### Option B: Install from a pre-built .app
+
+If someone sent you `Flipotron.zip`:
+
+1. Unzip the archive
+2. Move `Flipotron.app` to `/Applications`
+3. Open it — macOS will ask for Accessibility permissions
+4. Go to **System Settings → Privacy & Security → Accessibility** and enable Flipotron
+
+### Sharing the app with someone
+
+To send Flipotron to a friend who doesn't want to build from source:
 
 ```bash
 cd Flipotron
 swiftc main.swift -o flipotron -framework Carbon -framework AppKit
+mkdir -p Flipotron.app/Contents/MacOS
+cp flipotron Flipotron.app/Contents/MacOS/
+zip -r Flipotron.zip Flipotron.app
 ```
 
-### Deploy
+Send them `Flipotron.zip` — they can follow **Option B** above.
 
-Create an app bundle and copy the binary:
+### Manual build and deploy
 
 ```bash
+cd Flipotron
+swiftc main.swift -o flipotron -framework Carbon -framework AppKit
 mkdir -p /Applications/Flipotron.app/Contents/MacOS
 cp flipotron /Applications/Flipotron.app/Contents/MacOS/
 ```
@@ -99,6 +127,8 @@ Then load it:
 ```bash
 launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.pavelbrick.flipotron.plist
 ```
+
+> **Note:** The `install.sh` script does all of this automatically.
 
 ## How It Works Under the Hood
 
