@@ -57,7 +57,10 @@ cd Flipotron
 
 The script compiles from source, creates an app bundle in `/Applications`, sets up autostart via LaunchAgent, and opens Accessibility settings.
 
-**Requirements:** macOS with Xcode Command Line Tools (`xcode-select --install`).
+**Requirements:**
+- macOS 12+ (Monterey and newer), Intel or Apple Silicon
+- Xcode Command Line Tools (`xcode-select --install`)
+- Keyboard layouts: ABC + RussianWin (default macOS Russian)
 
 After install, add `Flipotron.app` to **System Settings → Privacy & Security → Accessibility**.
 
